@@ -1,6 +1,8 @@
 # go-pandorasbox
 ## Integrated Tool Library [Pandora's Box]
 #### Concept: Integrated, efficient, abstract, diverse, reliable
+### Language
+#### (EN/[CN](./README_CN.md))
 ## What is it? How does it work?
 - This is an integrated tool library, currently mainly partial network tools, such as communication protocols, encryption coding, RPC frameworks, etc., combined with my thinking in Golang development, independently summarized and encapsulated development tool library.
 - Because this is an integrated tool library, you can check what functions are available through [Index](#index). It is expected that each key functional module will have a description file later.
