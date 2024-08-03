@@ -20,6 +20,8 @@
    - This is a simple proxy implementation of http. It uses the net/http package internally, so it only supports http1 type protocols.
 2. [socks](./xnet/proxy/socks)
    - This is a pure golang implementation of socks4/4a/5. It refers to the specification document, integrates abstract interfaces and supports more detailed configuration.
+3. [xrpc](./xrpc)
+   - xrpc is a custom-implemented rpc communication framework.
 ## Index
 1. [_build](./_build)
     - This is a script for simple cross-compilation. It is usually copied to your own project and then run to compile the project.

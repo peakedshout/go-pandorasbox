@@ -1,3 +1,3 @@
 # xrpc
-Architecture diagram
+## Architecture diagram
 ![](../.doc/xrpc.png)
