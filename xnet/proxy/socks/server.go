@@ -88,16 +88,22 @@ func (s *Server) listen(ln net.Listener) error {
 }
 
 func (s *Server) handleConn(conn net.Conn) {
-	defer conn.Close()
+	sc := &serverConn{
+		Conn: conn,
+	}
+	defer sc.Close()
+	ctx, cl := context.WithCancel(s.ctx)
+	defer cl()
+	ctxtool.GWaitFunc(ctx, func() {
+		_ = conn.Close()
+	})
 
 	buf := make([]byte, socksVersionLen)
 	_, err := io.ReadFull(conn, buf)
 	if err != nil {
 		return
 	}
-	sc := &serverConn{
-		Conn: conn,
-	}
+
 	switch buf[0] {
 	case socksVersion4:
 		err = s.handleSocks4(sc)
@@ -165,29 +171,36 @@ func (c *serverConn) Close() error {
 	if c.copyConn != nil {
 		_ = c.copyConn.Close()
 	}
+	if c.udpConn != nil {
+		_ = c.udpConn.Close()
+	}
 	return c.Conn.Close()
 }
 
 func (c *serverConn) ioCopy() {
+	copyBuffer := io.Discard
 	if c.udpConn != nil {
 		defer c.udpConn.Close()
-		buf := make([]byte, 32*1024)
-		for {
-			n, addr, err := c.udpConn.ReadFrom(buf)
-			if err != nil {
-				return
+		go func() {
+			buf := make([]byte, 32*1024)
+			for {
+				n, addr, err := c.udpConn.ReadFrom(buf)
+				if err != nil {
+					return
+				}
+				_, err = c.udpConn.WriteTo(buf[:n], addr)
+				if err != nil {
+					return
+				}
 			}
-			_, err = c.udpConn.WriteTo(buf[:n], addr)
-			if err != nil {
-				return
-			}
-		}
+		}()
 	}
 	if c.copyConn != nil {
 		defer c.copyConn.Close()
 		go io.Copy(c.Conn, c.copyConn)
-		io.Copy(c.copyConn, c.Conn)
+		copyBuffer = c.copyConn
 	}
+	_, _ = io.Copy(copyBuffer, c.Conn)
 }
 
 func (c *serverConn) writeSocks4Resp(code byte, addr net.Addr) error {
