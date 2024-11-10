@@ -75,7 +75,7 @@ func NewMultiListener(ctx context.Context, bind bool, lns ...net.Listener) (net.
 	case 1:
 		ml.addr = ml.xl[0].Addr()
 	default:
-		al := make(multiAddr, 0, len(ml.xl))
+		al := make(xnetutil.MultiAddr, 0, len(ml.xl))
 		for _, listener := range ml.xl {
 			al = append(al, listener.Addr())
 		}
@@ -155,22 +155,4 @@ func (ml *multiListener) multiClose() {
 	for _, ln := range ml.xl {
 		ln.Close()
 	}
-}
-
-type multiAddr []net.Addr
-
-func (ma multiAddr) Network() string {
-	sl := make([]string, 0, len(ma))
-	for _, addr := range ma {
-		sl = append(sl, addr.Network())
-	}
-	return fmt.Sprint(sl)
-}
-
-func (ma multiAddr) String() string {
-	sl := make([]string, 0, len(ma))
-	for _, addr := range ma {
-		sl = append(sl, addr.Network()+"_"+addr.String())
-	}
-	return fmt.Sprint(sl)
 }

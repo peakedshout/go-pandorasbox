@@ -1,6 +1,7 @@
 package uuid
 
 import (
+	"encoding/base64"
 	"github.com/gofrs/uuid"
 	"github.com/peakedshout/go-pandorasbox/tool/xbit"
 	"math"
@@ -41,4 +42,12 @@ func NewMMInt64() (max int64, min int64) {
 	max, _ = xbit.BigFromBytes[int64](bytes[:8])
 	min, _ = xbit.BigFromBytes[int64](bytes[8:16])
 	return max, min
+}
+
+func NewStdBase64() string {
+	return base64.RawStdEncoding.EncodeToString(NewBytes())
+}
+
+func NewUrlBase64() string {
+	return base64.RawURLEncoding.EncodeToString(NewBytes())
 }

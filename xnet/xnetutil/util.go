@@ -1,6 +1,7 @@
 package xnetutil
 
 import (
+	"fmt"
 	"github.com/peakedshout/go-pandorasbox/xnet/xneterr"
 	"net"
 	"reflect"
@@ -37,4 +38,22 @@ func NewNetAddr(network, address string) net.Addr {
 		network: network,
 		address: address,
 	}
+}
+
+type MultiAddr []net.Addr
+
+func (ma MultiAddr) Network() string {
+	sl := make([]string, 0, len(ma))
+	for _, addr := range ma {
+		sl = append(sl, addr.Network())
+	}
+	return fmt.Sprint(sl)
+}
+
+func (ma MultiAddr) String() string {
+	sl := make([]string, 0, len(ma))
+	for _, addr := range ma {
+		sl = append(sl, addr.Network()+"_"+addr.String())
+	}
+	return fmt.Sprint(sl)
 }

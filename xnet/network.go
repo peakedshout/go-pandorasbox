@@ -184,6 +184,8 @@ func GetBaseStreamListenerConfig(network string) (xnetutil.ListenerConfig, error
 		return xnetutil.NewDefaultListenerConfig(nil), nil
 	case BaseNetworkQuic:
 		return xquic.NewQuicListenConfig(nil, nil), nil
+	case BaseNetworkUdp:
+		return xnetutil.NewXPacketListenCfg(0, 0), nil
 	default:
 		return nil, xneterr.ErrNetworkIsInvalid.Errorf(fmt.Sprintf("%s is not stream base network", network))
 	}

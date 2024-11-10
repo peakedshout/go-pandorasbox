@@ -19,7 +19,7 @@ type defaultListenerConfig struct {
 	*net.ListenConfig
 }
 
-func NewDefaultListenerConfig(lc *net.ListenConfig) ListenerConfig {
+func NewDefaultListenerConfig(lc *net.ListenConfig) *defaultListenerConfig {
 	if lc == nil {
 		lc = &net.ListenConfig{}
 	}

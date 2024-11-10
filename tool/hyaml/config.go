@@ -2,6 +2,7 @@ package hyaml
 
 import (
 	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -88,6 +89,7 @@ func (bc *Config[T]) Save() error {
 func (bc *Config[T]) SaveAs(path string) error {
 	bc.mux.Lock()
 	defer bc.mux.Unlock()
+	makePath(path)
 	file, err := os.Create(path)
 	if err != nil {
 		return err
@@ -109,6 +111,7 @@ func (bc *Config[T]) SetPath(path string) {
 }
 
 func SavePath(path string, a any) error {
+	makePath(path)
 	file, err := os.Create(path)
 	if err != nil {
 		return err
@@ -123,4 +126,27 @@ func SavePath(path string, a any) error {
 		return err
 	}
 	return nil
+}
+
+func SavePathT(path string, a any) error {
+	makePath(path)
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	b, err := MarshalWithCommentT(a)
+	if err != nil {
+		return err
+	}
+	_, err = file.Write(b)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func makePath(p string) {
+	dir := filepath.Dir(p)
+	_ = os.MkdirAll(dir, 0750)
 }
