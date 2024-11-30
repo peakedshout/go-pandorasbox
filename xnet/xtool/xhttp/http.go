@@ -28,6 +28,11 @@ const (
 	TypeMuxWait
 )
 
+const (
+	ArgsQuery  = "xhttp-query"
+	ArgsHeader = "xhttp-header"
+)
+
 type Config struct {
 	Ctx    context.Context
 	Type   Type
@@ -120,6 +125,7 @@ func (s *Server) Set(name string, handlers ...Handler) {
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				_, _ = writer.Write([]byte(err.Error()))
+				return
 			}
 		}
 	})
@@ -348,8 +354,12 @@ func (c *Client) CallAny(ctx context.Context, name string, data, out any) error 
 	return json.Unmarshal(bs, out)
 }
 
-func (c *Client) getUrl(name string) string {
-	return c.s + "://" + path.Join(c.host, c.prefix, name)
+func (c *Client) getUrl(ctx context.Context, name string) string {
+	query := getArgsQuery(ctx).Encode()
+	if query == "" {
+		return c.s + "://" + path.Join(c.host, c.prefix, name)
+	}
+	return c.s + "://" + path.Join(c.host, c.prefix, name+"?"+query)
 }
 
 func (c *Client) call(ctx context.Context, name string, data any) (*http.Response, error) {
@@ -369,9 +379,13 @@ func (c *Client) call(ctx context.Context, name string, data any) (*http.Respons
 			r = bs
 		}
 	}
-	req, err := http.NewRequestWithContext(ctx, "", c.getUrl(name), r)
+	req, err := http.NewRequestWithContext(ctx, "", c.getUrl(ctx, name), r)
 	if err != nil {
 		return nil, err
+	}
+	header := getArgsHeader(ctx)
+	if header != nil {
+		req.Header = header
 	}
 	if c.auth != nil {
 		req.SetBasicAuth(c.auth.u, c.auth.p)
@@ -381,4 +395,36 @@ func (c *Client) call(ctx context.Context, name string, data any) (*http.Respons
 		return nil, err
 	}
 	return response, nil
+}
+
+func getArgsQuery(ctx context.Context) url.Values {
+	value := ctx.Value(ArgsQuery)
+	if value == nil {
+		return nil
+	}
+	uv, ok := value.(url.Values)
+	if ok {
+		return uv
+	}
+	return nil
+}
+
+func getArgsHeader(ctx context.Context) http.Header {
+	value := ctx.Value(ArgsHeader)
+	if value == nil {
+		return nil
+	}
+	uv, ok := value.(http.Header)
+	if ok {
+		return uv
+	}
+	return nil
+}
+
+func SetArgsQuery(ctx context.Context, values url.Values) context.Context {
+	return context.WithValue(ctx, ArgsQuery, values)
+}
+
+func SetArgsHeader(ctx context.Context, header http.Header) context.Context {
+	return context.WithValue(ctx, ArgsHeader, header)
 }
