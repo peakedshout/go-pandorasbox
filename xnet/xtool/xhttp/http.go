@@ -139,8 +139,8 @@ func (s *Server) authCb(w http.ResponseWriter, r *http.Request) bool {
 	username, password, ok := r.BasicAuth()
 	if s.auth != nil {
 		if !ok || !s.auth(username, password) {
-			_, _ = w.Write([]byte(ErrAuthFailed.Error()))
 			w.WriteHeader(http.StatusUnauthorized)
+			_, _ = w.Write([]byte(ErrAuthFailed.Error()))
 			return false
 		}
 	}
@@ -150,8 +150,8 @@ func (s *Server) authCb(w http.ResponseWriter, r *http.Request) bool {
 func (s *Server) muxCb(w http.ResponseWriter, r *http.Request) (fn func(), ok bool) {
 	defer func() {
 		if !ok {
-			_, _ = w.Write([]byte(ErrRejectHandle.Error()))
 			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte(ErrRejectHandle.Error()))
 		}
 	}()
 	switch s.sType {
