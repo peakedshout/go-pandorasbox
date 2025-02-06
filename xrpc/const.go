@@ -66,6 +66,7 @@ const (
 	MethodStream     Method = "MethodStream"
 	MethodSendStream Method = "MethodSendStream"
 	MethodRecvStream Method = "MethodRecvStream"
+	MethodReverseRpc Method = "MethodReverseRpc"
 )
 
 type Handler interface {

@@ -305,6 +305,32 @@ func (s *Server) Context() context.Context {
 	return s.ctx
 }
 
+func (s *Server) RouteList() map[Method][]string {
+	m := map[Method][]string{
+		MethodRpc:        {},
+		MethodStream:     {},
+		MethodSendStream: {},
+		MethodRecvStream: {},
+		MethodReverseRpc: {},
+	}
+	for k := range s.rpcRoute {
+		m[MethodRpc] = append(m[MethodRpc], k)
+	}
+	for k := range s.ssRoute {
+		m[MethodStream] = append(m[MethodStream], k)
+	}
+	for k := range s.rsRoute {
+		m[MethodSendStream] = append(m[MethodSendStream], k)
+	}
+	for k := range s.srRoute {
+		m[MethodRecvStream] = append(m[MethodRecvStream], k)
+	}
+	for k := range s.rrRoute {
+		m[MethodReverseRpc] = append(m[MethodReverseRpc], k)
+	}
+	return m
+}
+
 func (s *Server) serveConn(conn net.Conn) {
 	_ = conn.SetDeadline(time.Now().Add(s.handshakeTimeout))
 	defer conn.Close()
@@ -456,6 +482,7 @@ func (s *Server) handleRpc(session *serverSession, xMsg *xmsg.XMsg) {
 	handler, ok := s.rpcRoute[xMsg.Header()]
 	if !ok {
 		_, _, _ = session.RecvXMsg(xMsg.Header(), xMsg.Id(), optRpcFailed, ErrInvalidCall.Errorf(xMsg.Header()))
+		return
 	}
 	go func() {
 		tmpCtx, cl := context.WithCancel(session.Context())
