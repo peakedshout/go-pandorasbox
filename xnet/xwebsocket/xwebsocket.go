@@ -32,8 +32,8 @@ func (w *websocketUpgrader) Upgrade(conn net.Conn) (net.Conn, error) {
 
 func (w *websocketUpgrader) UpgradeContext(ctx context.Context, conn net.Conn) (net.Conn, error) {
 	if w.isClient {
-		return tls.Client(conn, w.cfg), nil
+		return websocketconn.Client(conn, w.cfg), nil
 	} else {
-		return tls.Server(conn, w.cfg), nil
+		return websocketconn.Server(conn, w.cfg), nil
 	}
 }

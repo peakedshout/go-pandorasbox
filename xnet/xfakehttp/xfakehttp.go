@@ -32,8 +32,8 @@ func (f *fakeHttpUpgrader) Upgrade(conn net.Conn) (net.Conn, error) {
 
 func (f *fakeHttpUpgrader) UpgradeContext(ctx context.Context, conn net.Conn) (net.Conn, error) {
 	if f.isClient {
-		return tls.Client(conn, f.cfg), nil
+		return fakehttpconn.Client(conn, f.cfg), nil
 	} else {
-		return tls.Server(conn, f.cfg), nil
+		return fakehttpconn.Server(conn, f.cfg), nil
 	}
 }
