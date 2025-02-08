@@ -17,7 +17,10 @@ func NewRcContextWithCancel(ctx context.Context, rc io.ReadCloser) (context.Cont
 
 func monitorConn(ctx context.Context, rc io.ReadCloser) (context.Context, context.CancelFunc) {
 	zero := make([]byte, 0)
-	tr := time.NewTimer(0 * time.Second)
+	tr := time.NewTimer(0)
+	if !tr.Stop() {
+		<-tr.C
+	}
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -30,9 +33,6 @@ func monitorConn(ctx context.Context, rc io.ReadCloser) (context.Context, contex
 			if err != nil {
 				cl()
 				return
-			}
-			if !tr.Stop() {
-				<-tr.C
 			}
 			tr.Reset(1 * time.Second)
 			select {
