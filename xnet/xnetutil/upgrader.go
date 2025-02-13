@@ -147,5 +147,10 @@ func (ud *upgraderDialer) DialContext(ctx context.Context, network string, add s
 	if err != nil {
 		return nil, err
 	}
-	return ud.upgrader.UpgradeContext(ctx, conn)
+	uconn, err := ud.upgrader.UpgradeContext(ctx, conn)
+	if err != nil {
+		_ = conn.Close()
+		return nil, err
+	}
+	return uconn, nil
 }
