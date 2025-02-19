@@ -50,6 +50,9 @@ func (rrc *serverReverseRpcContext) Rpc(ctx context.Context, header string, send
 	}()
 	select {
 	case msg := <-ch:
+		if msg.Type == rMsgTypeErr {
+			return errors.New(string(msg.Data))
+		}
 		if recv == nil {
 			return nil
 		}
