@@ -6,6 +6,11 @@ import (
 	"reflect"
 )
 
+func Valid(bs []byte) bool {
+	m := map[string]any{}
+	return yaml.Unmarshal(bs, &m) == nil
+}
+
 func Unmarshal(in []byte, out interface{}) (err error) {
 	return yaml.Unmarshal(in, out)
 }
@@ -47,6 +52,18 @@ func MarshalStr(in interface{}) (out string, err error) {
 
 func MustMarshalStr(in interface{}) (out string) {
 	return string(MustMarshal(in))
+}
+
+func UnmarshalV2(inBody interface{}, outBody interface{}) error {
+	b, err := yaml.Marshal(inBody)
+	if err != nil {
+		return err
+	}
+	return yaml.Unmarshal(b, outBody)
+}
+
+func MustUnmarshalV2(inBody interface{}, outBody interface{}) {
+	MustUnmarshal(MustMarshal(inBody), &outBody)
 }
 
 func MarshalWithComment(in interface{}) (out []byte, err error) {

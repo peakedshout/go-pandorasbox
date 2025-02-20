@@ -4,6 +4,14 @@ import (
 	"encoding/json"
 )
 
+func Valid(bs []byte) bool {
+	return json.Valid(bs)
+}
+
+func Unmarshal(in []byte, out interface{}) (err error) {
+	return json.Unmarshal(in, out)
+}
+
 func MarshalStr(body interface{}) (string, error) {
 	bytes, err := json.Marshal(body)
 	if err != nil {
@@ -12,15 +20,19 @@ func MarshalStr(body interface{}) (string, error) {
 	return string(bytes), nil
 }
 
+func Marshal(in interface{}) (out []byte, err error) {
+	return json.Marshal(in)
+}
+
 func UnmarshalStr(str string, body interface{}) error {
-	return json.Unmarshal([]byte(str), body)
+	return Unmarshal([]byte(str), body)
 }
 
 func MustUnmarshal(b []byte, body interface{}) {
 	if len(b) == 0 {
 		return
 	}
-	err := json.Unmarshal(b, &body)
+	err := Unmarshal(b, &body)
 	if err != nil {
 		panic(err)
 	}
