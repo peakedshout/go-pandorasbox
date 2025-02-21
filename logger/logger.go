@@ -15,6 +15,8 @@ import (
 )
 
 type Logger interface {
+	Clone(name string) Logger
+	Level() LogLevel
 	SyncLoggerCopy(ctx context.Context, w io.Writer) error
 	AddLoggerCopy(w io.Writer)
 	DelLoggerCopy(w io.Writer)
@@ -27,12 +29,22 @@ type Logger interface {
 	Log(a ...any)
 	Error(a ...any)
 	Fatal(a ...any)
+	Debugf(format string, a ...any)
+	Infof(format string, a ...any)
+	Warnf(format string, a ...any)
+	Logf(format string, a ...any)
+	Errorf(format string, a ...any)
+	Fatalf(format string, a ...any)
 }
 
 type LogLevel int8
 
+func (l LogLevel) String() string {
+	return logShow[l+2]
+}
+
 const (
-	LogLevelAll = iota - 2
+	LogLevelAll LogLevel = iota - 2
 	LogLevelDebug
 	LogLevelInfo
 	LogLevelWarn
@@ -60,7 +72,7 @@ type logger struct {
 	needStack bool
 	needColor bool
 	stackSkip int
-	listener  tmap.SyncMap[io.Writer, context.CancelCauseFunc]
+	listener  *tmap.SyncMap[io.Writer, context.CancelCauseFunc]
 }
 
 func Init(name string) Logger {
@@ -71,9 +83,32 @@ func Init(name string) Logger {
 		needStack: false,
 		needColor: true,
 		stackSkip: 11,
+		listener:  &tmap.SyncMap[io.Writer, context.CancelCauseFunc]{},
 	}
 	l.AddLoggerCopy(os.Stderr)
 	return l
+}
+
+func (l *logger) Clone(name string) Logger {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+	if name == "" {
+		name = l.name
+	}
+	nl := &logger{
+		name:      name,
+		lock:      sync.RWMutex{},
+		level:     l.level,
+		needStack: l.needStack,
+		needColor: l.needColor,
+		stackSkip: l.stackSkip,
+		listener:  l.listener,
+	}
+	return nl
+}
+
+func (l *logger) Level() LogLevel {
+	return l.getLoggerLevel()
 }
 
 func (l *logger) SyncLoggerCopy(ctx context.Context, w io.Writer) error {
@@ -126,6 +161,24 @@ func (l *logger) Error(a ...any) {
 }
 func (l *logger) Fatal(a ...any) {
 	l.setLog(LogLevelFatal, a...)
+}
+func (l *logger) Debugf(format string, a ...any) {
+	l.setLog(LogLevelDebug, fmt.Sprintf(format, a...))
+}
+func (l *logger) Infof(format string, a ...any) {
+	l.setLog(LogLevelInfo, fmt.Sprintf(format, a...))
+}
+func (l *logger) Warnf(format string, a ...any) {
+	l.setLog(LogLevelWarn, fmt.Sprintf(format, a...))
+}
+func (l *logger) Logf(format string, a ...any) {
+	l.setLog(LogLevelLog, fmt.Sprintf(format, a...))
+}
+func (l *logger) Errorf(format string, a ...any) {
+	l.setLog(LogLevelError, fmt.Sprintf(format, a...))
+}
+func (l *logger) Fatalf(format string, a ...any) {
+	l.setLog(LogLevelFatal, fmt.Sprintf(format, a...))
 }
 
 func (l *logger) setLog(level LogLevel, a ...any) {
@@ -274,6 +327,24 @@ func Error(a ...any) {
 }
 func Fatal(a ...any) {
 	gLogger.Fatal(a...)
+}
+func Debugf(format string, a ...any) {
+	gLogger.Debugf(format, a...)
+}
+func Infof(format string, a ...any) {
+	gLogger.Infof(format, a...)
+}
+func Warnf(format string, a ...any) {
+	gLogger.Warnf(format, a...)
+}
+func Logf(format string, a ...any) {
+	gLogger.Logf(format, a...)
+}
+func Errorf(format string, a ...any) {
+	gLogger.Errorf(format, a...)
+}
+func Fatalf(format string, a ...any) {
+	gLogger.Fatalf(format, a...)
 }
 
 func GetLogLevel(level string) LogLevel {
