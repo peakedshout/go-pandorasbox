@@ -177,7 +177,7 @@ func (x *XCmd) AsyncServe() (err error) {
 			return err
 		}
 	}
-	go x.s.Serve(ln)
+	go x.s.AutoServe(ln)
 	return nil
 }
 
@@ -193,7 +193,7 @@ func (x *XCmd) AsyncServeCallBack(fn func(err error)) (err error) {
 		}
 	}
 	go func() {
-		fn(x.s.Serve(ln))
+		fn(x.s.AutoServe(ln))
 	}()
 	return nil
 }
