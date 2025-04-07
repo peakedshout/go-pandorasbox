@@ -37,7 +37,6 @@ func (p *GPool) worker() {
 		case <-p.ctx.Done():
 			return
 		case task := <-p.tasks:
-			p.twg.Add(1)
 			task()
 			p.twg.Done()
 		}
@@ -50,6 +49,7 @@ func (p *GPool) Do(task func()) bool {
 		task()
 		return false
 	case p.tasks <- task:
+		p.twg.Add(1)
 		return true
 	}
 }
