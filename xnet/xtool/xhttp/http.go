@@ -119,6 +119,7 @@ func (s *Server) Set(name string, handlers ...Handler) {
 			h:       request.Header,
 			r:       request.Body,
 			w:       writer,
+			req:     request,
 		}
 		for _, handler := range handlers {
 			err := handler(ctx)
@@ -187,6 +188,7 @@ type Context struct {
 	h   http.Header
 	r   io.ReadCloser
 	w   http.ResponseWriter
+	req *http.Request
 }
 
 func (c *Context) Query() url.Values {
@@ -248,6 +250,10 @@ func (c *Context) WriteStringLn(s string) (int, error) {
 func (c *Context) WriteAny(a any) error {
 	c.w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(c.w).Encode(a)
+}
+
+func (c *Context) Raw() (http.ResponseWriter, *http.Request) {
+	return c.w, c.req
 }
 
 type ClientConfig struct {
